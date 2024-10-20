@@ -1,0 +1,14 @@
+- hosts: intranetweb
+  vars:
+    result: []
+  tasks:
+    - name: Automated Execution of Linux Security Audit Files
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - linux_vulnerability_checks/*.yml
+    - name: Sorting result
+      set_fact:
+        result: "{{ result | sort }}"
+    - name: Display result
+      debug:
+        msg: "{{ result }}"
