@@ -8,7 +8,7 @@
         - linux_vulnerability_checks/*.yml
     - name: Sorting result
       set_fact:
-        result: "{{ result | sort }}"
+        result: "{{ result | sort(attribute='num') }}"
     - name: Display result
       debug:
         msg: "{{ result }}"
