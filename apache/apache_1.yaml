@@ -6,22 +6,17 @@
       stat:
         path: /etc/httpd/conf/httpd.conf
       register: httpd_conf
-
-    - name: httpd.conf 파일 존재 메시지 출력
-      debug:
+    - debug:
         msg: "httpd.conf 파일이 존재합니다"
       when: httpd_conf.stat.exists
-     
-    - name: httpd.conf 파일 존재 메시지 출력
-      debug:
-        msg: "httpd.conf 파일이 존재합니다"
-      when: httpd.conf.stat.exists  # apache2.conf가 존재할 경우에만 실행
-
+      
     - name: DocumentRoot 경로 확인 (httpd.conf)
       shell: cat /etc/httpd/conf/httpd.conf | grep DocumentRoot
       register: DocumentRoot_httpd
     - debug:
-        msg: "취약"
-        when: DocumentRoot_httpd | regex_search('DocumentRoot *"/var/www/html"') != ''
-        
-
+        msg: >
+          {% if DocumentRoot_httpd.stdout | regex_search('DocumentRoot *"/var/www/html"') %}
+            "취약"
+          {% else %}
+            "양호"
+          {% endif %}

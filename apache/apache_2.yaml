@@ -2,3 +2,9 @@
 - name: Apache 매뉴얼 디렉터리 존재 여부 취약점 진단
   hosts: intranetweb
   tasks:
+  - name: 매뉴얼 디렉터리 존재 여부 확인
+    shell: find . -name manual
+    register: directory_httpd
+    debug: 
+      msg: "취약"
+      when: directory_httpd | find . -regex(?=manual) != ' '
