@@ -1,0 +1,19 @@
+---
+- name: Apache 파일 업로드 및 다운로드 취약점 조치 
+  hosts: intranetweb 
+  tasks:
+    - name: 파일 업로드 및 다운로드 용량 제한 설정 추가
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        line: 'LimitRequestBody 204800000'
+        state: present #LimitRequestBody 204800000 추가
+        insertafter: '<Directory /var/www>'  # <Directory /var/www> 찾기
+      register: LimitRequestBody_action_httpd
+
+    - name: Apache 재시작
+      service:
+        name: httpd_restart 
+        state: restarted
+      when: LimitRequestBody_action_httpd.changed
+
+
