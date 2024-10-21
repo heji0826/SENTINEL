@@ -1,0 +1,27 @@
+---
+- name: Apache 매뉴얼 파일 및 디렉터리 취약점 조치
+  hosts: intranetweb
+  tasks:
+    - name: 매뉴얼 디렉터리 제거
+      shell: rm -rf /etc/httpd/conf/manual 
+      register: manual_action
+      ignore_errors: true  # 디렉터리가 없을 경우 오류 무시
+
+    - name: Apache 재시작 (디렉터리 제거 후)
+      service:
+        name: httpd    
+        state: restarted
+      when: manual_action.changed
+
+    - name: 매뉴얼 파일 제거
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^( *manual.*)'  
+        line: '# manual'  # 주석처리
+      register: manual_file_action
+
+    - name: Apache 재시작
+      service:
+        name: httpd
+        state: restarted
+      when: manual_file_action.changed
