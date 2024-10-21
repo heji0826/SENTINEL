@@ -1,0 +1,30 @@
+---
+- name: Apache 링크 사용 취약점 조치
+  hosts: intranetweb 
+  tasks:
+    - name: 심볼릭 링크 사용 제한
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        state: present
+        regexp: '^ *Options Indexes FollowSymLinks' 
+        line: 'Options FollowSymLinks' # 변경
+      register: SymLinks_action
+
+    - name: Apache 재시작
+      service:
+        name: SymLinks_restart  
+        state: restarted
+      when: SymLinks_action.changed
+
+    - name: aliases 사용 제한 
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^( *Alias.*)'  # Alias가 포함된 줄 찾기
+        line: '# Alias'  # 주석처리
+      register: aliases_action
+
+    - name: Apache 재시작
+      service:
+        name: aliases_restart
+        state: restarted
+      when: aliases_action.changed
