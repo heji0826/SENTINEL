@@ -1,0 +1,4 @@
+---
+- name: Apache 매뉴얼 디렉터리 존재 여부 취약점 진단
+  hosts: intranetweb
+  tasks:
