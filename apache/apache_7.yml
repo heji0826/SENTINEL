@@ -1,34 +1,23 @@
+---
 # header
 - set_fact:
     diag: "{{ {'항목': '최신 보안 패치 적용', 'id': 7} }}"
 
 # body
 
-# 1. Run httpd -v to check Apache version
-- name: Run httpd -v to check Apache version
-  ansible.builtin.command:
-    cmd: "httpd -v"
+# 1. Check Apache version
+- name: Get Apache version
+  shell: "httpd -v | grep 'Server version' | awk '{print $3}' | cut -d'/' -f2"
   register: apache_version
   ignore_errors: yes
 
-# 2. Display Apache version details
 - name: Display Apache version
   debug:
-    msg:
-      - "{{ apache_version.stdout.splitlines()[0] }}"
-      - "{{ apache_version.stdout.splitlines()[1] }}"
+    msg: "{{ apache_version.stdout }}"
 
-# 3. Set weak variable based on Apache version
-# Here, we assume that certain versions (for example, older than 2.4.50) are vulnerable.
+# 2. Set weak variable based on Apache version
 - set_fact:
-    weak: >
-      {% if apache_version.stdout is not defined %}
-        true
-      {% elif 'Apache/2.4.50' in apache_version.stdout or 'Apache/2.4.51' in apache_version.stdout %}
-        false
-      {% else %}
-        true
-      {% endif %}
+    weak: "{{ (apache_version.stdout is defined) and (apache_version.stdout is version('2.3.0', '<')) }}"
 
 - debug:
     msg: "Weak variable value: {{ weak }}"
@@ -38,12 +27,12 @@
     - debug:
         msg: "취약"
     - set_fact:
-        result: "{{ result | default([]) + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+        result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
   when: weak
 
 - block:
     - debug:
         msg: "양호"
     - set_fact:
-        result: "{{ result | default([]) + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+        result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
   when: not weak
