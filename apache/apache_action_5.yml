@@ -1,0 +1,31 @@
+---
+- name: Check and comment out "Indexes" option in httpd.conf
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure /etc/httpd/conf/httpd.conf exists
+      stat:
+        path: /etc/httpd/conf/httpd.conf
+      register: httpd_conf
+
+    - name: Search for "Indexes" option in httpd.conf
+      shell: grep -E "^\s*Options.*Indexes" /etc/httpd/conf/httpd.conf
+      register: indexes_option
+      failed_when: false
+      changed_when: false
+
+    - name: Comment out the "Indexes" option if present
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^(\s*Options.*Indexes.*)$'
+        line: '# \1'
+        backrefs: yes
+      when: indexes_option.stdout != ""
+      notify:
+        - Restart Apache
+
+  handlers:
+    - name: Restart Apache
+      service:
+        name: httpd
+        state: restarted
