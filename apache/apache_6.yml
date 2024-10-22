@@ -1,26 +1,43 @@
----
-- name: Check Apache web process privileges
-  hosts: all
-  become: yes
-  tasks:
+# header
+- set_fact:
+    diag: "{{ {'항목': '웹 프로세스 권한 확인', 'id': 6} }}"
 
-    - name: Check Apache process
-      shell: "ps -ef | grep apache | grep -v grep"
-      register: apache_process
+# body
 
-    - name: Display Apache process info
-      debug:
-        msg: "{{ apache_process.stdout_lines }}"
+# 1. Check Apache process
+- name: Check Apache process
+  shell: "ps -ef | grep apache | grep -v grep"
+  register: apache_process
+  ignore_errors: yes
 
-    - name: Check if Apache is running with root privileges
-      shell: "ps -eo user,comm | grep apache | grep -v grep"
-      register: process_privileges
+- name: Display Apache process info
+  debug:
+    msg: "{{ apache_process.stdout_lines }}"
 
-    - name: Verify Apache user privileges
-      debug:
-        msg: "{{ process_privileges.stdout_lines }}"
+# 2. Check if Apache is running with root privileges
+- name: Check if Apache is running with root privileges
+  shell: "ps -eo user,comm | grep apache | grep -v grep"
+  register: process_privileges
+  ignore_errors: yes
 
-    - name: Fail if Apache is running with root privileges
-      fail:
-        msg: "Apache is running with root privileges, which is a security risk."
-      when: "'root' in process_privileges.stdout"
+# 3. Set weak variable based on Apache privileges
+- set_fact:
+    weak: "{{ 'root' in process_privileges.stdout }}"
+
+- debug:
+    msg: "Weak variable value: {{ weak }}"
+
+# 4. Final result
+- block:
+    - debug:
+        msg: "취약"
+    - set_fact:
+        result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+  when: weak
+
+- block:
+    - debug:
+        msg: "양호"
+    - set_fact:
+        result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+  when: not weak
