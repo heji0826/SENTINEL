@@ -1,0 +1,24 @@
+---
+- name: Apache DocumentRoot 취약점 조치
+  hosts: intranetweb 
+  tasks:
+
+  - name: DocumentRoot 경로 폴더 생성
+    file:
+      path: /var/security_apache
+      state: directory
+    register: DocumentRoot_action
+
+  - name: DocumentRoot 경로 수정
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      state: present
+      regexp: '^ *DocumentRoot *'
+      line: 'DocumentRoot /var/security_apache' # 변경
+    register: DocumentRoot_action
+
+  - name: Apache 재시작
+    service:
+      name: httpd
+      state: restarted
+    when: DocumentRoot_action.changed
