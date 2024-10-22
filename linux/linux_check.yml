@@ -1,4 +1,4 @@
-- hosts: internetweb
+- hosts: intranetweb
   vars:
     result: []
   vars_prompt:
