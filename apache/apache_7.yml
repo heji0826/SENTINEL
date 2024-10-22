@@ -1,0 +1,13 @@
+---
+- name: Check Apache version on Rocky Linux 9
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Run httpd -v to check Apache version
+      ansible.builtin.command:
+        cmd: "httpd -v"
+      register: apache_version
+
+    - name: Display Apache version
+      debug:
+        msg: "{{ apache_version.stdout }}"
