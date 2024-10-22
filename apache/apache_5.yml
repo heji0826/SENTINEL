@@ -1,0 +1,25 @@
+---
+- name: Check if "Indexes" option is present in httpd.conf
+  hosts: webservers
+  become: true
+  tasks:
+    - name: Ensure /etc/httpd/conf/httpd.conf exists
+      stat:
+        path: /etc/httpd/conf/httpd.conf
+      register: httpd_conf
+
+    - name: Search for "Indexes" option in httpd.conf
+      shell: grep -E "^\s*Options.*Indexes" /etc/httpd/conf/httpd.conf
+      register: indexes_option
+      failed_when: false
+      changed_when: false
+
+    - name: Output "Y" if Indexes option is found
+      debug:
+        msg: "Indexes 옵션이 있음 -> 디렉터리 검색 가능, 취약!!!"
+      when: indexes_option.stdout != ""
+
+    - name: Output "N" if Indexes option is not found
+      debug:
+        msg: "Indexes 옵션이 없음 -> 디렉터리 검색 불가, 양호!!!"
+      when: indexes_option.stdout == ""
