@@ -1,0 +1,59 @@
+---
+- name: Check and restrict Apache web process privileges
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Check Apache process
+      shell: "ps -ef | grep httpd | grep -v grep"  # httpd로 변경
+      register: apache_process
+
+    - name: Display Apache process info
+      debug:
+        msg: "{{ apache_process.stdout_lines }}"
+
+    - name: Check if Apache is running with root privileges
+      shell: "ps -eo user,comm | grep httpd | grep -v grep"  # httpd로 변경
+      register: process_privileges
+
+    - name: Verify Apache user privileges
+      debug:
+        msg: "{{ process_privileges.stdout_lines }}"
+
+    - name: Fail if Apache is running with root privileges
+      fail:
+        msg: "Apache is running with root privileges, which is a security risk."
+      when: "'root' in process_privileges.stdout"
+
+    - name: Ensure Apache is running under a non-root user
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^User '
+        line: 'User apache'  # Apache 소유자 변경
+        state: present
+
+    - name: Ensure Apache is running under a non-root group
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Group '
+        line: 'Group apache'  # Apache 그룹 변경
+        state: present
+
+    - name: Restart Apache service to apply changes
+      service:
+        name: httpd
+        state: restarted
+      when: "'root' in process_privileges.stdout"
+
+    - name: Confirm Apache is running under non-root user
+      shell: "ps -eo user,comm | grep httpd | grep -v grep"
+      register: updated_privileges
+
+    - name: Display updated Apache user privileges
+      debug:
+        msg: "{{ updated_privileges.stdout_lines }}"
+
+    - name: Fail if Apache is still running with root privileges
+      fail:
+        msg: "Apache is still running with root privileges, which is a security risk."
+      when: "'root' in updated_privileges.stdout"
