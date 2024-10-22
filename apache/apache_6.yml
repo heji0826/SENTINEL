@@ -1,0 +1,26 @@
+---
+- name: Check Apache web process privileges
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Check Apache process
+      shell: "ps -ef | grep apache | grep -v grep"
+      register: apache_process
+
+    - name: Display Apache process info
+      debug:
+        msg: "{{ apache_process.stdout_lines }}"
+
+    - name: Check if Apache is running with root privileges
+      shell: "ps -eo user,comm | grep apache | grep -v grep"
+      register: process_privileges
+
+    - name: Verify Apache user privileges
+      debug:
+        msg: "{{ process_privileges.stdout_lines }}"
+
+    - name: Fail if Apache is running with root privileges
+      fail:
+        msg: "Apache is running with root privileges, which is a security risk."
+      when: "'root' in process_privileges.stdout"
