@@ -4,7 +4,7 @@
   tasks:
     # 헤더
     - set_fact:
-        diag: "{{ {'항목': '환경설정 파일 접근 권한', 'id': 6} }}"
+        diag: "{{ {'항목': '환경설정 파일 접근 권한', 'id': 6, '조치방안': '환경설정 파일 접근 권한 640으로 설정'} }}"
 
     # 결과 초기화
     - set_fact:
@@ -24,7 +24,7 @@
         - debug:
             msg: "취약"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
       when: mysql_config_stats.stat.mode|int < 2560  # 0640 is octal, so its decimal equivalent is 2560
 
     # 권한이 0640 이상일 경우 양호로 판정
@@ -32,7 +32,7 @@
         - debug:
             msg: "양호"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
       when: mysql_config_stats.stat.mode|int >= 2560
 
     # 최종 결과 출력
