@@ -33,14 +33,14 @@
         - debug:
             msg: "취약"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': '불필요한 계정 삭제'}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
       when: account_check_results.results | selectattr('changed', 'equalto', True) | list | length > 0
 
     - block:
         - debug:
             msg: "양호"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': '불필요한 계정 삭제'}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
       when: account_check_results.results | selectattr('changed', 'equalto', False) | list | length == 3  # 모든 계정이 없던 경우
 
     - name: 최종 결과 출력
