@@ -5,7 +5,7 @@
   tasks:
     # 헤더
     - set_fact:
-        diag: "{{ {'항목': 'root 권한으로 서버 구동 제한', 'id': 5} }}"
+        diag: "{{ {'항목': 'root 권한으로 서버 구동 제한', 'id': 5, '조치방안': 'mysql server config 파일에서 [mysqld] 그룹의 user 지시자 설정'} }}"
 
     # 결과 초기화
     - set_fact:
@@ -24,14 +24,14 @@
         - debug:
             msg: "취약"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
       when: mysql_user_check.stdout == "user=root"
 
     - block:
         - debug:
             msg: "양호"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
       when: mysql_user_check.stdout != "user=root"
 
     - name: 최종 결과 출력
