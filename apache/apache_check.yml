@@ -10,7 +10,7 @@
     - name: Automated Execution of Apache Security Audit Files
       include_tasks: "{{ item }}"
       with_fileglob:
-        - "apache_vulnerability_checks/apache_{{ yml_num }}.yml"
+        - "apache_vulnerability_checks/apache{{ yml_num }}.yml"
 
     - name: Collect task results in the 'result' list
       set_fact:
