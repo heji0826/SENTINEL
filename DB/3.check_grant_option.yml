@@ -7,7 +7,7 @@
   tasks:
     # 헤더
     - set_fact:
-        diag: "{{ {'항목': '타 사용자에 권한 부여 옵션 제한', 'id': 3} }}"
+        diag: "{{ {'항목': '타 사용자에 권한 부여 옵션 제한', 'id': 3, '조치방안': '불필요한 grant_priv 권한 제거'} }}"
 
     # 결과 초기화
     - set_fact:
@@ -31,14 +31,14 @@
         - debug:
             msg: "취약"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
       when: grant_option_check.results[0].query_result | length == 0
 
     - block:
         - debug:
             msg: "양호"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
       when: grant_option_check.results[0].query_result | length > 0
 
     - name: 최종 결과 출력
