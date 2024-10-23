@@ -5,7 +5,7 @@
     tasks:
       # header (진단 항목 설정)
       - set_fact:
-          diag: "{{ {'항목': '로그 활성화', 'id': 8} }}"
+          diag: "{{ {'항목': '로그 활성화', 'id': 8, '조치방안': 'General log, Slow log 설정'} }}"
 
       # 결과 초기화
       - set_fact:
@@ -81,7 +81,7 @@
           - debug:
               msg: "취약"
           - set_fact:
-              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
         when: general_log_status.query_result[0][0].Value == "OFF" or slow_query_log_status.query_result[0][0].Value == "OFF"
 
       # result (양호한 경우)
@@ -89,7 +89,7 @@
           - debug:
               msg: "양호"
           - set_fact:
-              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
         when: general_log_status.query_result[0][0].Value == "ON" and slow_query_log_status.query_result[0][0].Value == "ON"
 
       # 최종 결과 출력
