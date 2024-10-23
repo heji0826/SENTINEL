@@ -1,4 +1,4 @@
-- hosts: intranetweb
+- hosts: mysql_servers
   vars:
     result: []
   tasks:
