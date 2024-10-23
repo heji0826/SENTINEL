@@ -6,7 +6,7 @@
 
       # header: 진단 항목을 설정합니다.
       - set_fact:
-          diag: "{{ {'항목': '최신 보안 패치 적용', 'id': 9} }}"
+          diag: "{{ {'항목': '최신 보안 패치 적용', 'id': 9, '조치방안': '최신 보안 패치 버전으로 업그레이드'} }}"
           result: []
 
       - name: Get MySQL current version
@@ -36,7 +36,7 @@
           - debug:
               msg: "취약"
           - set_fact:
-              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
         when: mysql_update_required
 
       # result: MySQL이 최신일 경우 양호로 표시
@@ -44,7 +44,7 @@
           - debug:
               msg: "양호"
           - set_fact:
-              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+              result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
         when: not mysql_update_required
       
       # 최종 결과 출력
