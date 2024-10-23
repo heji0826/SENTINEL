@@ -10,7 +10,7 @@
   tasks:
     # 헤더
     - set_fact:
-        diag: "{{ {'항목': 'DB 사용자 계정 정보 테이블 접근 권한', 'id': 4} }}"
+        diag: "{{ {'항목': 'DB 사용자 계정 정보 테이블 접근 권한', 'id': 4, '조치방안': '일반 사용자 계정의 권한 제거'} }}"
 
     # 결과 초기화
     - set_fact:
@@ -41,14 +41,14 @@
         - debug:
             msg: "취약"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': True, '조치방안': diag.조치방안}] }}"
       when: "'policy requirements' in check_result.msg"
 
     - block:
         - debug:
             msg: "양호"
         - set_fact:
-            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False}] }}"
+            result: "{{ result + [{'id': diag.id, '제목': diag.항목, '취약': False, '조치방안': diag.조치방안}] }}"
       when: "'policy requirements' not in check_result.msg"
 
     - name: 최종 결과 출력
