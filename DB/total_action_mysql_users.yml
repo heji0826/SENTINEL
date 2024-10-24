@@ -1,0 +1,194 @@
+---
+  - hosts: mysql_servers
+    remote_user: rockylinux
+    become: yes
+    vars:
+      mysql_root_password: "rockylinux"
+      user_to_revoke: "test"  # 권한을 제거할 사용자 이름
+      host_to_revoke: "localhost"  # 권한을 제거할 호스트
+
+    tasks:
+      # 1. Remove unnecessary MySQL accounts
+      - name: Remove unnecessary MySQL accounts
+        mysql_user:
+          name: "{{ item }}"
+          state: absent
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+        loop:
+          - 'test'
+          - 'guest'
+          - 'anonymous'
+
+      # 2. Set MySQL password validation policy
+      - name: Set MySQL validate_password_policy to STRONG
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SET GLOBAL validate_password_policy = 'STRONG';"
+
+      - name: Set minimum password length to 8
+        mysql_variables:
+          variable: validate_password_length
+          value: 8
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+
+      - name: Set other password validation requirements
+        mysql_variables:
+          variable: "{{ item.variable }}"
+          value: "{{ item.value }}"
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+        loop:
+          - { variable: 'validate_password_mixed_case_count', value: 1 }
+          - { variable: 'validate_password_number_count', value: 1 }
+          - { variable: 'validate_password_special_char_count', value: 1 }
+
+      # 3. Revoke GRANT OPTION from specific users
+      - name: Change password for 'test' user to satisfy password policy
+        mysql_user:
+          name: 'test'
+          host: 'localhost'
+          password: "Test123!@#"
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          
+      - name: Revoke GRANT OPTION from users
+        mysql_user:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          name: "{{ item.name }}"
+          host: "{{ item.host }}"
+          priv: "*.*:ALL,GRANT"
+          state: present
+          append_privs: no
+        loop:
+          - { name: 'test', host: 'localhost' }
+        register: revoke_result
+
+      - name: Verify revoked privileges
+        debug:
+          var: revoke_result
+
+      # 4. Revoke all privileges from the specified user
+      - name: Revoke all privileges from user
+        mysql_user:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          name: "{{ user_to_revoke }}"
+          host: "{{ host_to_revoke }}"
+          priv: "*.*:ALL"
+          state: absent
+        register: revoke_privileges
+
+      - name: Verify revoked privileges
+        debug:
+          var: revoke_privileges
+
+      # 5. Check MySQL service status and configuration
+      - name: Check MySQL service status
+        command: systemctl status mysqld
+        register: mysql_status
+
+      - name: Stop MySQL service if running
+        command: systemctl stop mysqld
+        when: mysql_status.rc == 0
+
+      - name: Update MySQL configuration to restrict to root
+        lineinfile:
+          path: /etc/my.cnf
+          regexp: '^user='
+          line: 'user=root'
+        notify: restart mysql
+
+      - name: Start MySQL service
+        command: systemctl start mysqld
+
+      # 6. Set permissions for MySQL configuration file
+      - name: Set permissions for MySQL configuration file
+        file:
+          path: /etc/my.cnf
+          owner: root
+          group: root
+          mode: '0640'
+
+      # 7. Ensure accounts use SHA-256 hashing algorithm
+      - name: Gather MySQL user accounts
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SELECT user, host FROM mysql.user WHERE plugin != 'mysql_native_password' OR (plugin = 'mysql_native_password' AND authentication_string NOT LIKE '%$5$%');"
+        register: users
+
+      - name: Change password hashing algorithm for users
+        mysql_user:
+          name: "{{ item.user }}"
+          host: "{{ item.host }}"
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          password: "Test123!@#"
+          password_hash: 'SHA256'
+        loop: "{{ users.results }}"
+        when: users.results is defined and users.results | length > 0
+
+      # 8. Check and activate MySQL logging
+      - name: Enable General log
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SET GLOBAL general_log = 'ON';"
+
+      - name: Set General log file path
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SET GLOBAL general_log_file = '/var/log/mysql/mysql.log';"
+
+      - name: Enable Slow query log
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SET GLOBAL slow_query_log = 'ON';"
+
+      - name: Set Slow query log file path
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SET GLOBAL slow_query_log_file = '/var/log/mysql/mysql-slow.log';"
+
+      - name: Set Long query time to 1 second
+        mysql_query:
+          login_user: root
+          login_password: "{{ mysql_root_password }}"
+          query: "SET GLOBAL long_query_time = 1;"
+
+      # 9. Check and update MySQL version if necessary
+      - name: Get MySQL current version
+        shell: "mysql -V | awk '{ print $5 }' | cut -d',' -f1"
+        register: mysql_version
+        ignore_errors: yes
+
+      - name: Show MySQL version
+        debug:
+          var: mysql_version.stdout
+
+      - name: Check available MySQL version from repository
+        shell: "yum info mysql-server | grep Version"
+        register: mysql_available_version
+        ignore_errors: yes
+
+      - name: Compare installed version with latest version
+        set_fact:
+          mysql_update_required: "{{ mysql_version.stdout is version(mysql_available_version.stdout, '<') }}"
+
+      - name: Update MySQL if not up-to-date
+        dnf:
+          name: mysql-server
+          state: latest
+        when: mysql_update_required
+
+      - name: MySQL is up-to-date
+        debug:
+          msg: "MySQL is up-to-date. Installed version: {{ mysql_version.stdout }}."
+        when: not mysql_update_required
