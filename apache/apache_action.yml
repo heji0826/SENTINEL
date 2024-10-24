@@ -1,0 +1,22 @@
+- hosts: internetweb
+  tasks:
+    # 1. 취약 항목만 필터링하여 'vulnerable_ids' 리스트에 추가
+    - name: Collect vulnerable IDs from result
+      set_fact:
+        vulnerable_ids: "{{ vulnerable_ids + [item.id] }}"
+      vars:
+        vulnerable_ids: []
+      loop: "{{ result }}"
+      when: item.취약 == true
+
+    # 2. 'apache_action_[id].yaml' 파일 실행하여 조치 수행
+    - name: Execute remediation tasks for vulnerable items
+      include_tasks: "apache_action_{{ item }}.yaml"
+      loop: "{{ vulnerable_ids }}"
+      when: vulnerable_ids | length > 0
+
+    # 3. 조치 후 결과 출력
+    - name: Display remediation actions completed
+      debug:
+        msg: "Remediation completed for IDs: {{ vulnerable_ids }}"
+      when: vulnerable_ids | length > 0

@@ -1,4 +1,4 @@
-- hosts: intranetweb
+- hosts: internetweb
   vars:
     result: []
   tasks:
@@ -23,3 +23,16 @@
     - name: Display result
       debug:
         msg: "{{ result }}"
+
+    # Save result to a JSON file
+    - name: Save result to JSON file
+      copy:
+        content: "{{ result | to_nice_json(indent=2, ensure_ascii=False) }}"  # JSON 변환
+        dest: "/tmp/result.json"  # 현재 디렉토리에 apache.json으로 저장
+
+    # Fetch the JSON file from remote to local
+    - name: Fetch JSON file to local machine
+      fetch:
+        src: "/tmp/result.json"
+        dest: "./apache.json"
+        flat: yes
