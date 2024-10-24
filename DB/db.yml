@@ -1,17 +1,14 @@
-- hosts: intranetweb
+- hosts: mysql_servers
   vars:
     result: []
-  vars_prompt:
-    - name: yml_num
-      prompt: "Enter num"
-      private: no
   tasks:
     # Include all audit check files
-    - name: Automated Execution of Apache Security Audit Files
+    - name: Automated Execution of DB Security Audit Files
       include_tasks: "{{ item }}"
       with_fileglob:
-        - "apache_vulnerability_checks/apache_{{ yml_num }}.yml"
+        - db_vulnerability_checks/*.yml
 
+    # Append each task's result to the 'result' list, avoid duplicates
     - name: Collect task results in the 'result' list
       set_fact:
         result: "{{ result + [{'항목': diag.항목, 'id': diag.id, '취약': weak, '조치방안': diag.조치방안}] }}"
