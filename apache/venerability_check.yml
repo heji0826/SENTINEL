@@ -1,8 +1,6 @@
 # 넌 우선 파일을 가져올 거야.
 # 그런 다음에 딕셔너리 중에 vulnerable_ids[3] 확인해서 값이 true면 vulnerable_ids[0] 가져와(id)
 
-
-
 - name: 취약한 항목 찾기 
   hosts: localhost
   tasks:
@@ -27,10 +25,10 @@
 
   - name: 취약 진단 부분 확인
     set_fact:
-       item_at_index_3: "{{ json_data.data[3] }}"
+      item_at_index_3: "{{ json_data }}"  # 리스트 인덱스 접근
   
   - debug: 
-     msg: "{{ json_data.data[3] }}"
+     msg: "{{ json_data[3] }}"
 
 #  # Append each task's result to the 'result' list, avoid duplicates
 #     - name: Collect task results in the 'result' list
