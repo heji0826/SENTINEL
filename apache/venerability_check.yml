@@ -15,7 +15,7 @@
   - set_fact:
       json_data: "{{ file_data.content | b64decode | from_json }}"
 
-  # diag[3] 가져오기 
+  # diag[3] 확인티비
 
   # \- name: Get dictionary item at index 3
   #   set_fact:
@@ -25,7 +25,12 @@
   #   debug:
   #     var: item_at_index_3
 
-
+  - name: 취약 진단 부분 확인
+    set_fact:
+       item_at_index_3: "{{ json_data.data[3] }}"
+  
+  - debug: 
+     msg: "{{ json_data.data[3] }}"
 
 #  # Append each task's result to the 'result' list, avoid duplicates
 #     - name: Collect task results in the 'result' list
