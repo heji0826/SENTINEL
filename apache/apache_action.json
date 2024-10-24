@@ -43,6 +43,7 @@
   {
     "id": 5,
     "제목": "디렉터리 리스팅 제거",
+    "조치방안": "Options Indexes FollowSymLinks 주석처리",
     "취약": true
   }
 ]
