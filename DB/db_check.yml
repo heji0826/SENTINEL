@@ -1,0 +1,28 @@
+- hosts: mysql_servers
+  vars:
+    result: []
+  vars_prompt:
+    - name: yml_num
+      prompt: "Enter num"
+      private: no
+  tasks:
+    # Include all audit check files
+    - name: Automated Execution of DB Security Audit Files
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "db_vulnerability_checks/apache_{{ yml_num }}.yml"
+
+    - name: Collect task results in the 'result' list
+      set_fact:
+        result: "{{ result + [{'항목': diag.항목, 'id': diag.id, '취약': weak, '조치방안': diag.조치방안}] }}"
+      when: diag is defined and weak is defined and (diag.id not in result | map(attribute='id') | list)
+
+    # Sort the result list by 'id'
+    - name: Sorting result
+      set_fact:
+        result: "{{ result | sort(attribute='id') }}"
+
+    # Display the final sorted result
+    - name: Display result
+      debug:
+        msg: "{{ result }}"
