@@ -1,9 +1,9 @@
-Apache
-id,제목,조치방안,취약,조치 후 취약여부
+﻿Apache
+id,제목,조치방안,취약,
 1,웹 서비스 영역의 분리 ,기본 디렉터리 변경,False,
 2,불필요한 파일 제거,매뉴얼 디렉터리 삭제,False,
 3, 링크 사용 금지,심볼릭 링크 사용 제한 및 Alias 사용 제한,False,
 4,파일 업로드 및 다운로드 제한 조치,파일 업로드 및 다운로드 용량 제한 설정,False,
-5,디렉터리 리스팅 제거,Options Indexes FollowSymLinks 주석처리,True,True
+5,디렉터리 리스팅 제거,Options Indexes FollowSymLinks 주석처리,False,
 6,웹 프로세스 권한 제한,apache 데몬 user/group 일반계정으로 변경,False,
 7,최신 보안 패치 적용,apache 최신 버전으로 업데이트,False,
