@@ -10,7 +10,7 @@
     - name: Automated Execution of DB Security Audit Files
       include_tasks: "{{ item }}"
       with_fileglob:
-        - "db_vulnerability_checks/{{ yml_num }}*.yml"
+        - "db_vulnerability_checks/{{ yml_num }}.*yml"
 
     - name: Collect task results in the 'result' list
       set_fact:
