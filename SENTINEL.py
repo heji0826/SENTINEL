@@ -9,97 +9,109 @@ from email import encoders
 import os
 
 # 이메일 설정
-sender_email = "gyudol99@naver.com"  # 보내는 사람 네이버 이메일 주소
-receiver_email = "gyudol99@naver.com"  # 받는 사람 이메일 주소
-password = "dkaghdkagh1."  # 네이버 이메일 계정 비밀번호
-subject = "취약점 진단 및 조치 결과"  # 이메일 제목
+sender_email = "gyudol99@naver.com"
+receiver_email = "gyudol99@naver.com"
+password = "dkaghdkagh1."
+subject = "취약점 진단 및 조치 결과"
 
 # 파일 경로 설정
-apache_json_path = '/home/ubuntu/SENTINEL/apache/apache.json'
-apache_action_json_path = '/home/ubuntu/SENTINEL/apache/apache_action.json'
 csv_file_path = '/home/ubuntu/SENTINEL/result.csv'
 
-# 1. Ansible 플레이북 실행 (apache.yml)
-print("Ansible apache.yml 실행 중...")
-subprocess.run(['ansible-playbook', 'apache.yml'], cwd='/home/ubuntu/SENTINEL/apache', check=True)
+# 점검 섹션 정보 설정
+sections = [
+    {
+        "name": "Apache",
+        "ansible_playbooks": ['apache.yml', 'apache_action.yml'],
+        "json_path": '/home/ubuntu/SENTINEL/apache/apache.json',
+        "action_json_path": '/home/ubuntu/SENTINEL/apache/apache_action.json'
+    },
+    {
+        "name": "Linux",
+        "ansible_playbooks": ['linux.yml', 'linux_action.yml'],
+        "json_path": '/home/ubuntu/SENTINEL/linux/linux.json',
+        "action_json_path": '/home/ubuntu/SENTINEL/linux/linux_action.json'
+    }
+    # {
+    #     "name": "DB",
+    #     "ansible_playbooks": ['db.yml', 'db_action.yml'],
+    #     "json_path": '/home/ubuntu/SENTINEL/db/db.json',
+    #     "action_json_path": '/home/ubuntu/SENTINEL/db/db_action.json'
+    # }
+]
 
-# 2. Ansible 플레이북 실행 (apache_action.yml)
-print("Ansible apache_action.yml 실행 중...")
-subprocess.run(['ansible-playbook', 'apache_action.yml'], cwd='/home/ubuntu/SENTINEL/apache', check=True)
-
-# 3. apache.json 파일 읽기
-with open(apache_json_path, 'r') as apache_file:
-    apache_data = json.load(apache_file)
-
-# 4. apache_action.json 파일 읽기
-with open(apache_action_json_path, 'r') as apache_action_file:
-    apache_action_data = json.load(apache_action_file)
-
-# 5. CSV 파일 초기화 및 "Apache" 소제목 추가
-with open(csv_file_path, mode='w', newline='') as csvfile:
-    writer = csv.writer(csvfile)
-    
-    # "Apache"라는 소제목 추가
-    writer.writerow(["Apache"])
-    
-    # 열 제목 추가 (취약여부 포함)
-    fieldnames = list(apache_data[0].keys()) + ["조치 후 취약여부"]
-    writer.writerow(fieldnames)
-
-    # 6. apache.json 데이터 작성
-    for item in apache_data:
-        writer.writerow(list(item.values()) + [""])  # "조치 후 취약여부"는 일단 빈칸으로 두기
-
-# 7. apache_action.json 데이터를 "조치 후 취약여부"로 추가
-# 7. apache_action.json 데이터가 비어있는 경우 예외 처리
-if not apache_action_data:  # apache_action.json 파일이 [] (빈 배열)일 경우
-    print("apache_action.json 파일이 비어 있습니다. '조치 후 취약여부'를 빈 값으로 설정합니다.")
-
-# 8. 해당 id와 맞는 행 찾아서 업데이트
-with open(csv_file_path, mode='r', newline='', encoding='utf-8-sig') as csvfile:
-    reader = list(csv.reader(csvfile))  # 기존 csv 데이터 읽기
-    header = reader[0]  # 첫 번째 행을 헤더로 저장
-    rows = reader[1:]  # 나머지는 데이터로 저장
-
-    # apache.json 데이터는 무조건 CSV에 기록됨
-    for row in rows:
-        # apache_action.json 데이터가 비어있으면 "조치 후 취약여부" 열을 빈칸으로 유지
-        if apache_action_data:  # apache_action.json이 비어있지 않은 경우에만 처리
-            for action_item in apache_action_data:
-                if row[0] == str(action_item['id']):  # ID가 일치하는지 확인
-                    row[-1] = action_item.get('취약', '')  # "조치 후 취약여부" 값을 업데이트
-                    break
-        else:
-            # apache_action.json이 비어있을 때는 "조치 후 취약여부"를 빈 값으로 유지
-            row[-1] = ""  # 빈칸으로 유지
-
-# 9. 수정된 데이터를 다시 파일에 쓰기
+# CSV 초기화
 with open(csv_file_path, mode='w', newline='', encoding='utf-8-sig') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(header)  # 첫 번째 행을 다시 씀
-    writer.writerows(rows)  # 수정된 데이터 다시 쓰기
+    pass
 
-print(f"CSV 파일이 {csv_file_path}에 저장되었습니다.")
+# 각 섹션 점검 및 CSV에 기록
+for section in sections:
+    section_name = section["name"]
+    json_path = section["json_path"]
+    action_json_path = section["action_json_path"]
+    
+    # Ansible 플레이북 실행
+    for playbook in section["ansible_playbooks"]:
+        if os.path.exists(os.path.join(os.path.dirname(json_path), playbook)):
+            print(f"{section_name} {playbook} 실행 중...")
+            subprocess.run(['ansible-playbook', playbook], cwd=os.path.dirname(json_path), check=True)
+        else:
+            print(f"{section_name}의 {playbook} 파일이 존재하지 않아 실행을 건너뜁니다.")
+    
+    # JSON 파일 읽기
+    with open(json_path, 'r') as json_file:
+        data = json.load(json_file)
 
+    # action.yml 파일이 존재하는 경우에만 action.json 읽기
+    if os.path.exists(action_json_path):
+        try:
+            with open(action_json_path, 'r') as action_file:
+                content = action_file.read().strip()
+                if content:
+                    action_data = json.loads(content)
+                else:
+                    action_data = []  # 비어있을 경우 빈 리스트로 처리
+        except json.JSONDecodeError:
+            action_data = []
+    else:
+        print(f"{section_name}의 action.json 파일이 존재하지 않아 '조치 후 취약여부'를 빈 값으로 설정합니다.")
+        action_data = []  # action.json이 없으면 빈 리스트로 처리
 
-# 10. CSV 파일 인코딩 변경 (utf-8-sig로 다시 저장)
-with open(csv_file_path, "r", encoding="utf-8-sig") as file:
-    content = file.read()  # 파일 내용을 읽음
+    # CSV에 데이터를 추가하는 부분을 mode='a'로 열기
+    with open(csv_file_path, mode='a', newline='', encoding='utf-8-sig') as csvfile:
+        writer = csv.writer(csvfile)
+        
+        # 섹션 제목 및 열 제목 추가
+        writer.writerow([section_name])
+        fieldnames = list(data[0].keys()) + ["조치 후 취약여부"]
+        writer.writerow(fieldnames)
 
-# utf-8-sig 인코딩으로 다시 저장 (파일 내용을 변경하지 않고 인코딩만 변경)
-with open(csv_file_path, "w", encoding="utf-8-sig") as file:
-    file.write(content)
+        # JSON 데이터 추가
+        rows = []
+        for item in data:
+            rows.append(list(item.values()) + [""])  # "조치 후 취약여부"는 빈칸으로 두기
+
+        # 조치 후 취약여부 열 업데이트
+        for i, row in enumerate(rows):
+            if action_data:  # action 데이터가 있을 경우
+                for action_item in action_data:
+                    if str(data[i]['id']) == str(action_item['id']):
+                        row[-1] = action_item.get("취약", "")
+                        break
+            else:
+                row[-1] = ""  # 비어있을 경우 빈 값 유지
+
+        writer.writerows(rows)
+
+    print(f"{section_name} 결과가 {csv_file_path}에 추가되었습니다.")
+
+print(f"모든 점검 결과가 {csv_file_path}에 저장되었습니다.")
 
 # 이메일 전송
-
-# MIME 객체 생성
 message = MIMEMultipart()
 message["From"] = sender_email
 message["To"] = receiver_email
 message["Subject"] = subject
-
-# 이메일 본문
-body = "CSV 파일을 첨부합니다."
+body = "각 점검 항목의 진단 및 조치 결과가 포함된 CSV 파일을 첨부합니다."
 message.attach(MIMEText(body, "plain"))
 
 # 파일 첨부
