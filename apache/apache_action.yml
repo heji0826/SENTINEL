@@ -2,7 +2,7 @@
 # 그런 다음에 딕셔너리 중에 vulnerable_ids[3] 확인해서 값이 true면 vulnerable_ids[0] 가져와(id)
 
 - name: 취약한 항목 찾기 
-  hosts: internetweb
+  hosts: intranetweb
   vars:
     result: []
   tasks:
