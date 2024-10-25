@@ -6,7 +6,7 @@ import subprocess
 # 파일 경로 설정
 apache_json_path = '/home/ubuntu/SENTINEL/apache/apache.json'
 apache_action_json_path = '/home/ubuntu/SENTINEL/apache/apache_action.json'
-csv_file_path = '/home/ubuntu/SENTINEL/result.csv'
+csv_file_path = '/home/ubuntu/share/result.csv'
 
 # 1. Ansible 플레이북 실행 (apache.yml)
 print("Ansible apache.yml 실행 중...")
@@ -58,14 +58,3 @@ with open(csv_file_path, mode='r+', newline='') as csvfile:
     writer.writerows(reader)
 
 print(f"CSV 파일이 {csv_file_path}에 저장되었습니다.")
-
-# 9. subprocess를 사용하여 Windows 로컬 컴퓨터로 CSV 파일 복사
-try:
-    # SCP 명령어 실행
-    subprocess.run(
-        ['scp', 'ubuntu@192.168.56.101:/home/ubuntu/SENTINEL/result.csv', '/mnt/c/Users/user/Desktop/result.csv'],
-        check=True  # 명령어가 실패하면 예외를 발생시킴
-    )
-    print("파일이 로컬 컴퓨터로 성공적으로 복사되었습니다.")
-except subprocess.CalledProcessError as e:
-    print(f"파일 복사 중 오류 발생: {e}")
