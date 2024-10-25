@@ -3,7 +3,7 @@ localhost
 [intranetweb]
 10.0.2.15
 [internetweb]
-10.0.2.9
+10.0.2.6
 [web:children]
 intranetweb
 internetweb
