@@ -1,0 +1,67 @@
+- name: 취약한 항목 찾기 
+  hosts: mysql_servers
+  vars:
+    result: []
+  tasks:
+  - name: 파일 불러오기 
+    slurp:
+      src: "/home/ubuntu/SENTINEL/db/db.json"  
+    register: file_data
+    delegate_to : localhost
+
+  # json파일 내용 base64 디코딩 필요 
+  - set_fact:
+      json_data: "{{ file_data.content | b64decode | from_json }}"
+
+  - name: 취약한 항목 필터링
+    set_fact:
+      vulnerable_ids: "{{ json_data | selectattr('취약', 'equalto', True) | map(attribute='id') | list }}"
+
+  - name: 취약한 항목 확인
+    debug:
+      msg: "취약한 항목 id: {{ vulnerable_ids }}"
+
+  - name: 취약 항목에 해당하는 파일 조치
+    include_tasks: "{{ item }}"
+    with_fileglob:
+      - "/home/ubuntu/SENTINEL/db/db_vulnerability_action/[0-9]*.yml"
+    when: vulnerable_ids | length > 0
+    loop_control:
+      label: "{{ item }}"
+
+  - name: 취약 항목에 해당하는 파일 점검
+    include_tasks: "{{ item }}"
+    with_fileglob:
+      - "/home/ubuntu/SENTINEL/db/db_vulnerability_checks/[0-9]*.yml"
+    when: vulnerable_ids | length > 0
+    loop_control:
+      label: "{{ item }}"
+
+  # Append each task's result to the 'result' list, avoid duplicates
+  - name: Collect task results in the 'result' list
+    set_fact:
+      result: "{{ result + [{'항목': diag.항목, 'id': diag.id, '취약': weak, '조치방안': diag.조치방안}] }}"
+    when: diag is defined and weak is defined and (diag.id not in result | map(attribute='id') | list)
+
+  # Sort the result list by 'id'
+  - name: Sorting result
+    set_fact:
+      result: "{{ result | sort(attribute='id') }}"
+
+  # Display the final sorted result
+  - name: Display result
+    debug:
+      msg: "{{ result }}"
+
+  # Save result to a JSON file
+  - name: Save result to JSON file
+    copy:
+      content: "{{ result | to_nice_json(indent=2, ensure_ascii=False) }}"  # JSON 변환
+      dest: "/tmp/result2.json"  # 현재 디렉토리에 db.json으로 저장
+
+  # Fetch the JSON file from remote to local
+  - name: Fetch JSON file to local machine
+    fetch:
+      src: "/tmp/result2.json"
+      dest: "./db_action.json"
+      flat: yes
