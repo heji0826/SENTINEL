@@ -31,18 +31,12 @@ sections = [
        "json_path": '/home/ubuntu/SENTINEL/linux/linux.json',
        "action_json_path": '/home/ubuntu/SENTINEL/linux/linux_action.json'
    },
-   {
-       "name": "Njinx",
-       "ansible_playbooks": ['nginx.yml', 'nginx.yml'],
-       "json_path": '/home/ubuntu/SENTINEL/nginx/nginx.json',
-       "action_json_path": '/home/ubuntu/SENTINEL/nginx/nginx_action.json'
-   }
-    # {
-    #     "name": "DB",
-    #     "ansible_playbooks": ['db.yml', 'db_action.yml'],
-    #     "json_path": '/home/ubuntu/SENTINEL/DB/db.json',
-    #     "action_json_path": '/home/ubuntu/SENTINEL/DB/db_action.json'
-    # }
+    {
+        "name": "DB",
+        "ansible_playbooks": ['db.yml', 'db_action.yml'],
+        "json_path": '/home/ubuntu/SENTINEL/DB/db.json',
+        "action_json_path": '/home/ubuntu/SENTINEL/DB/db_action.json'
+    }
 
 ]
 
