@@ -1,2 +1,2 @@
 [mysql_servers]
-192.168.100.133
+192.168.56.101 ansible_user=devops ansible_ssh_pass=devops ansible_become_password=hello
