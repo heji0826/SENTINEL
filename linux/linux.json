@@ -177,7 +177,7 @@
     "id": 30,
     "제목": "Sendmail  버전 점검",
     "조치방안": "Sendmail 및 Postfix 최신 버전 패치 진행",
-    "취약": true
+    "취약": false
   },
   {
     "id": 31,
@@ -189,7 +189,7 @@
     "id": 32,
     "제목": "일반 사용자의 Sendmail 실행 방지",
     "조치방안": "O PrivacyOptions= 설정 부분에 restrictqrun 옵션 추가 및 postfix 파일 접근 권한, 소유자 변경, postfix 그룹의 일반 사용자 제거",
-    "취약": true
+    "취약": false
   },
   {
     "id": 33,

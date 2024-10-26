@@ -9,8 +9,8 @@ from email import encoders
 import os
 
 # 이메일 설정
-sender_email = "gyudol99@naver.com"
-receiver_email = "gyudol99@naver.com"
+sender_email = "gyu5ya@naver.com"
+receiver_email = "gyu5ya@naver.com"
 password = "dkaghdkagh1."
 subject = "취약점 진단 및 조치 결과"
 
@@ -19,24 +19,25 @@ csv_file_path = '/home/ubuntu/SENTINEL/result.csv'
 
 # 점검 섹션 정보 설정
 sections = [
+   # {
+     #   "name": "Apache",
+     #   "ansible_playbooks": ['apache.yml', 'apache_action.yml'],
+     #  "json_path": '/home/ubuntu/SENTINEL/apache/apache.json',
+     #   "action_json_path": '/home/ubuntu/SENTINEL/apache/apache_action.json'
+   # } ,
+   # {
+   #     "name": "Linux",
+   #     "ansible_playbooks": ['linux.yml', 'linux_action.yml'],
+   #     "json_path": '/home/ubuntu/SENTINEL/linux/linux.json',
+   #     "action_json_path": '/home/ubuntu/SENTINEL/linux/linux_action.json'
+   # },
     {
-        "name": "Apache",
-        "ansible_playbooks": ['apache.yml', 'apache_action.yml'],
-        "json_path": '/home/ubuntu/SENTINEL/apache/apache.json',
-        "action_json_path": '/home/ubuntu/SENTINEL/apache/apache_action.json'
-    },
-    {
-        "name": "Linux",
-        "ansible_playbooks": ['linux.yml', 'linux_action.yml'],
-        "json_path": '/home/ubuntu/SENTINEL/linux/linux.json',
-        "action_json_path": '/home/ubuntu/SENTINEL/linux/linux_action.json'
+        "name": "DB",
+        "ansible_playbooks": ['db.yml', 'db_action.yml'],
+        "json_path": '/home/ubuntu/SENTINEL/DB/db.json',
+        "action_json_path": '/home/ubuntu/SENTINEL/DB/db_action.json'
     }
-    # {
-    #     "name": "DB",
-    #     "ansible_playbooks": ['db.yml', 'db_action.yml'],
-    #     "json_path": '/home/ubuntu/SENTINEL/db/db.json',
-    #     "action_json_path": '/home/ubuntu/SENTINEL/db/db_action.json'
-    # }
+
 ]
 
 # CSV 초기화

@@ -5,7 +5,7 @@
   tasks:
   - name: 파일 불러오기 
     slurp:
-      src: "/home/ubuntu/SENTINEL/db/db.json"  
+      src: "/home/ubuntu/SENTINEL/DB/db.json"  
     register: file_data
     delegate_to : localhost
 
@@ -24,7 +24,7 @@
   - name: 취약 항목에 해당하는 파일 조치
     include_tasks: "{{ item }}"
     with_fileglob:
-      - "/home/ubuntu/SENTINEL/db/db_vulnerability_action/[0-9]*.yml"
+      - "/home/ubuntu/SENTINEL/DB/db_vulnerability_action/[0-9]*.yml"
     when: vulnerable_ids | length > 0
     loop_control:
       label: "{{ item }}"
@@ -32,7 +32,7 @@
   - name: 취약 항목에 해당하는 파일 점검
     include_tasks: "{{ item }}"
     with_fileglob:
-      - "/home/ubuntu/SENTINEL/db/db_vulnerability_checks/[0-9]*.yml"
+      - "/home/ubuntu/SENTINEL/DB/db_vulnerability_checks/[0-9]*.yml"
     when: vulnerable_ids | length > 0
     loop_control:
       label: "{{ item }}"
