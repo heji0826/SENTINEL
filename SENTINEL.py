@@ -19,18 +19,18 @@ csv_file_path = '/home/ubuntu/SENTINEL/result.csv'
 
 # 점검 섹션 정보 설정
 sections = [
-   {
-       "name": "Apache",
-       "ansible_playbooks": ['apache.yml', 'apache_action.yml'],
-      "json_path": '/home/ubuntu/SENTINEL/apache/apache.json',
-       "action_json_path": '/home/ubuntu/SENTINEL/apache/apache_action.json'
-   } ,
-   {
-       "name": "Linux",
-       "ansible_playbooks": ['linux.yml', 'linux_action.yml'],
-       "json_path": '/home/ubuntu/SENTINEL/linux/linux.json',
-       "action_json_path": '/home/ubuntu/SENTINEL/linux/linux_action.json'
-   },
+  # {
+  #     "name": "Apache",
+  #     "ansible_playbooks": ['apache.yml', 'apache_action.yml'],
+  #    "json_path": '/home/ubuntu/SENTINEL/apache/apache.json',
+  #     "action_json_path": '/home/ubuntu/SENTINEL/apache/apache_action.json'
+  # } ,
+  # {
+  #     "name": "Linux",
+  #     "ansible_playbooks": ['linux.yml', 'linux_action.yml'],
+  #     "json_path": '/home/ubuntu/SENTINEL/linux/linux.json',
+  #     "action_json_path": '/home/ubuntu/SENTINEL/linux/linux_action.json'
+  # },
     {
         "name": "DB",
         "ansible_playbooks": ['db.yml', 'db_action.yml'],
